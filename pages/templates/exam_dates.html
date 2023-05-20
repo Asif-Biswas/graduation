@@ -5,16 +5,6 @@
 {% endblock %}
 
 {% block content %}
-
-{% if messages %}
-    {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">
-            {{ message }}
-        </div>
-    {% endfor %}
-{% endif %}
-
-
 <div class="container mb-5">
     <h1 class="my-4 text-center">Exam Dates</h1>
     <div id="calendar"></div>
@@ -39,7 +29,7 @@
             </button>
             </div>
             <div class="modal-body">
-            {% comment %} <div class="form-group">
+            <div class="form-group">
                 <label for="examName">Course</label>
                 <select name="course" class="form-control" id="examName">
                     <option selected disabled>Select Course</option>
@@ -47,22 +37,14 @@
                         <option value="{{ course.id }}">{{ course.course_name }}</option>
                     {% endfor %}
                 </select>
-            </div> {% endcomment %}
+            </div>
             <div class="form-group">
                 <label for="examDate1">Start Date</label>
                 <input name="start_date" type="date" class="form-control" id="examDate1" placeholder="Exam Date">
             </div>
             <div class="form-group">
-                <label for="examDate3">End Date</label>
-                <input name="end_date" type="date" class="form-control" id="examDate3" placeholder="Exam Date">
-            </div>
-            <div class="form-group">
                 <label for="examDate2">Start Time</label>
                 <input name="start_time" type="time" class="form-control" id="examDate2" placeholder="Exam Date">
-            </div>
-            <div class="form-group">
-                <label for="examDate4">Start Time</label>
-                <input name="end_time" type="time" class="form-control" id="examDate4" placeholder="Exam Date">
             </div>
             </div>
             <div class="modal-footer">
