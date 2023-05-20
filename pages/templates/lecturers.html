@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'lecturers.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="d-flex justify-content-between">
+                    <h2 class="my-4">Lecturers</h2>
+                    {% if user.is_superuser %}
+                    <button class="btn btn-primary my-4" data-toggle="modal" data-target="#exampleModalCenter" style="width: 150px">Add Lecturer</button>
+                    {% endif %}
+                </div>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th scope="col">Lecturer ID</th>
+                            <th scope="col">Lecturer Name</th>
+                            <th scope="col">Past Courses Taught</th>
+                            <th scope="col">Rating</th>
+                            {% if user.is_superuser %}
+                            <th scope="col">Actions</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lecturer in lecturers %}
+                            <tr>
+                                <td>{{ lecturer.id }}</td>
+                                <td>{{ lecturer.lecturer_name }}</td>
+                                <td>
+                                    {% for course in lecturer.past_courses.all %}
+                                        {{ course.course_name }}{% if not forloop.last %}, {% endif %}
+                                    {% empty %}
+                                        No past courses taught.
+                                    {% endfor %}
+                                </td>
+                                <td>{{ lecturer.lecturer_rating }}</td>
+                                {% if user.is_superuser %}
+                                <td>
+                                    <a href="/admin/pages/lecturer/{{ lecturer.id }}/change/" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="/admin/pages/lecturer/{{ lecturer.id }}/delete/" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    {% if user.is_superuser %}
+        <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <form method="POST" action="{% url 'add_lecturer' %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Add Lecturer</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input required name="lecturer_name" type="text" class="form-control" id="name" placeholder="Enter Course Code">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input required name="lecturer_email" type="email" class="form-control" id="email" placeholder="Enter Course Name">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone</label>
+                        <input required name="lecturer_phone" type="tel" class="form-control" id="phone" placeholder="Enter Course Code">
+                    </div>
+                    <div class="form-group">
+                        <label for="gender">Gender</label>
+                        <select required name="lecturer_gender" class="form-control">
+                            <option value="">Choose</option>
+                            <option value="M">Male</option>
+                            <option value="F">Female</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="lecturer_type">Lecturer Type</label>
+                        <select required name="lecturer_type" class="form-control">
+                            <option value="">Choose</option>
+                            <option value="L">Laboratory</option>
+                            <option value="T">Theory</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="past_courses">Past Courses Taught</label>
+                        <!-- multiselect -->
+                        <select name="lecturer_past_courses" multiple class="form-control" id="past">
+                            {% for course in courses %}
+                                <option value="{{ course.id }}">{{ course.course_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="rating">Rating (out of 5)</label>
+                        <input required name="lecturer_rating" type="number" class="form-control" id="rating" placeholder="Enter Course Code" min="0" max="5" step="0.1">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+{% endblock %}
