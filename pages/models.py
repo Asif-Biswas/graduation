@@ -65,7 +65,7 @@ class Lecturer(models.Model):
     )
     lecturer_type = models.CharField(max_length=1, choices=TEACHER_TYPE_CHOICES)
     lecturer_past_courses = models.ManyToManyField('Course', related_name='past_lecturers', blank=True)
-    lecturer_rating = models.FloatField()
+    lecturer_rating = models.FloatField(default=0.0)
 
     def __str__(self):
         return self.lecturer_name

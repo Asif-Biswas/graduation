@@ -81,15 +81,15 @@
             </button>
             </div>
             <div class="modal-body">
-            {% comment %} <div class="form-group">
-                <label for="examName">Course</label>
-                <select name="course" class="form-control" id="examName">
-                    <option selected disabled>Select Course</option>
-                    {% for course in courses %}
-                        <option value="{{ course.id }}">{{ course.course_name }}</option>
-                    {% endfor %}
-                </select>
-            </div> {% endcomment %}
+                <div class="form-group">
+                    <label for="past_courses">Courses (select multiple)</label>
+                    <!-- multiselect -->
+                    <select name="courses" multiple class="form-control" id="past">
+                        {% for course in courses %}
+                            <option value="{{ course.id }}">{{ course.course_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
             <div class="form-group">
                 <label for="examDate1">Start Date</label>
                 <input required name="start_date" type="date" class="form-control" id="examDate1">

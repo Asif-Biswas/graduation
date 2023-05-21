@@ -9,6 +9,8 @@ from .models import Course, Lecturer, ExamSchedule, Event
 from django.contrib.auth.models import User
 import datetime
 import math
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 
         
@@ -30,7 +32,7 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
-#@login_required
+@login_required(login_url='login')
 def landing(request):
     return render(request, 'landing.html', {'user': request.user})
 
@@ -40,7 +42,7 @@ def calendar(request):
 
 
 ########## COURSES ##########
-
+@login_required(login_url='login')
 def courses(request):
     # Fetch all courses from the database
     courses = Course.objects.all()
@@ -49,7 +51,7 @@ def courses(request):
     context = {'courses': courses, 'lecturers': lecturers}
     return render(request, 'courses.html', context)
 
-
+@login_required(login_url='login')
 def add_course(request):
     if request.method == 'POST':
         course_code = request.POST.get('course_code')
@@ -74,14 +76,41 @@ def add_course(request):
         return redirect('courses')
 
 
+@login_required(login_url='login')
+def edit_course(request, course_id):
+    course = Course.objects.get(id=course_id)
+    if request.method == 'POST':
+        course_code = request.POST.get('course_code')
+        course_name = request.POST.get('course_name')
+        credit_hours = request.POST.get('credit_hours')
+        course_lecturer = request.POST.get('course_lecturer')
+        course_level = request.POST.get('course_level')
+        course_lab_lecturer = request.POST.get('course_lab_lecturer')
+        course_past_lecturers = request.POST.getlist('course_past_lecturers')
+        course.course_code = course_code
+        course.course_name = course_name
+        course.credit_hours = credit_hours
+        course.course_lecturer = Lecturer.objects.get(id=int(course_lecturer)) if course_lecturer else None
+        course.course_level = course_level
+        course.course_lab_lecturer = Lecturer.objects.get(id=int(course_lab_lecturer)) if course_lab_lecturer else None
+        course.save()
+        course.course_past_lecturers.clear()
+        for lecturer_id in course_past_lecturers:
+            course.course_past_lecturers.add(Lecturer.objects.get(id=int(lecturer_id)))
+        return redirect('courses')
+    lecturers = Lecturer.objects.all()
+    return render(request, 'edit_course.html', {'course': course, 'lecturers': lecturers})
+
 
 ########## LECTURERS ##########
-
+@login_required(login_url='login')
 def lecturers(request):
     lecturers = Lecturer.objects.all()
     courses = Course.objects.all()
     return render(request, 'lecturers.html', {'lecturers': lecturers, 'courses': courses})
 
+
+@login_required(login_url='login')
 def add_lecturer(request):
     if request.method == 'POST':
         lecturer_name = request.POST.get('lecturer_name')
@@ -89,22 +118,48 @@ def add_lecturer(request):
         lecturer_phone = request.POST.get('lecturer_phone')
         lecturer_gender = request.POST.get('lecturer_gender')
         lecturer_type = request.POST.get('lecturer_type')
-        lecturer_rating = request.POST.get('lecturer_rating')
-        lecturer_past_courses = request.POST.get('lecturer_past_courses')
+        lecturer_past_courses = request.POST.getlist('lecturer_past_courses')
         lecturer = Lecturer.objects.create(
             lecturer_name=lecturer_name,
             lecturer_email=lecturer_email,
             lecturer_number=lecturer_phone,
             lecturer_gender=lecturer_gender,
             lecturer_type=lecturer_type,
-            lecturer_rating=lecturer_rating,
-
         )
         lecturer.save()
+        for course_id in lecturer_past_courses:
+            lecturer.lecturer_past_courses.add(Course.objects.get(id=int(course_id)))
         return redirect('lecturers')
 
 
+@login_required(login_url='login')
+def edit_lecturer(request, lecturer_id):
+    lecturer = Lecturer.objects.get(id=lecturer_id)
+    if request.method == 'POST':
+        lecturer_name = request.POST.get('lecturer_name')
+        lecturer_email = request.POST.get('lecturer_email')
+        lecturer_phone = request.POST.get('lecturer_phone')
+        lecturer_gender = request.POST.get('lecturer_gender')
+        lecturer_type = request.POST.get('lecturer_type')
+        lecturer_past_courses = request.POST.getlist('lecturer_past_courses')
+        lecturer.lecturer_name = lecturer_name
+        lecturer.lecturer_email = lecturer_email
+        lecturer.lecturer_number = lecturer_phone
+        lecturer.lecturer_gender = lecturer_gender
+        lecturer.lecturer_type = lecturer_type
+        lecturer.save()
+        lecturer.lecturer_past_courses.clear()
+        print(lecturer_past_courses)
+        for course_id in lecturer_past_courses:
+            lecturer.lecturer_past_courses.add(Course.objects.get(id=int(course_id)))
+        return redirect('lecturers')
+    courses = Course.objects.all()
+    return render(request, 'edit_lecturer.html', {'lecturer': lecturer, 'courses': courses})
+
+
+
 ########## Add Lexturer to Course ##########
+@login_required(login_url='login')
 def add_lecturer_to_course(request, course_id):
     if request.method == 'POST':
         lecturer_id = request.POST.get('lecturer')
@@ -118,6 +173,7 @@ def add_lecturer_to_course(request, course_id):
 
 
 ########## EXAM ##########
+@login_required(login_url='login')
 def exam_dates(request):
     courses = Course.objects.all()
     exam_dates = ExamSchedule.objects.all()
@@ -126,19 +182,20 @@ def exam_dates(request):
         exam_dates_json.append({
             'title': exam_date.course.course_name,
             'start': exam_date.exam_date.strftime('%Y-%m-%d') + 'T' + exam_date.start_time.strftime('%H:%M:%S'),
-            'url': '/delete-exam/' + str(exam_date.id)
+            'url': '/confirm-delete-exam/' + str(exam_date.id)
         })
     return render(request, 'exam_dates.html', {'courses': courses, 'exam_dates': exam_dates_json})
 
+@login_required(login_url='login')
 def add_exam(request):
     if request.method == 'POST':
-        course = request.POST.get('course')
+        courses = request.POST.getlist('courses')
         start_date = request.POST.get('start_date')
         end_date = request.POST.get('end_date')
         start_time = request.POST.get('start_time')
         end_time = request.POST.get('end_time')
 
-        courses = Course.objects.all()
+        courses = Course.objects.filter(id__in=courses)
         exam_dates = []
         exam_hours = []
         # add the days to exam_dates list between start_date and end_date
@@ -235,6 +292,7 @@ def add_exam(request):
         return redirect('exam_dates')
 
 
+@login_required(login_url='login')
 def add_exam_single(request):
     if request.method == 'POST':
         course = request.POST.get('course')
@@ -251,10 +309,43 @@ def add_exam_single(request):
         return redirect('exam_dates')
 
 
+@login_required(login_url='login')
 def delete_exam(request, exam_id):
     exam_schedule = ExamSchedule.objects.get(id=exam_id)
     exam_schedule.delete()
     return redirect('exam_dates')
+
+
+@login_required(login_url='login')
+def confirm_delete_exam(request, exam_id):
+    return render(request, 'confirm_delete_exam.html', {'exam_id': exam_id})
+
+
+
+########## Profile ##########
+@login_required(login_url='login')
+def edit_profile(request):
+    user = request.user
+    if request.method == 'POST':
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        email_address = request.POST.get('email')
+        password = request.POST.get('password')
+        
+        user.first_name = first_name
+        user.last_name = last_name
+        user.email = email_address
+        if password != '':
+            if len(password) < 8:
+                messages.error(request, 'Password must be at least 8 characters')
+                return redirect('edit_profile')
+            user.set_password(password)
+        user.save()
+        return redirect('edit_profile')
+    return render(request, 'edit_profile.html', {'user': user})
+
+
+
 
 
 @csrf_exempt
@@ -306,6 +397,7 @@ def assign_lecturer(request):
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
 
+@login_required(login_url='login')
 def esnad(request):
     lecturers = Lecturer.objects.all()
     courses = Course.objects.all()

@@ -24,11 +24,13 @@ urlpatterns = [
     # Course URLs
     path('courses/', views.courses, name='courses'),
     path('add-course/', views.add_course, name='add_course'),
+    path('edit-course/<int:course_id>', views.edit_course, name='edit_course'),
 
 
     # Lecturer URLs
     path('lecturers/', views.lecturers, name='lecturers'),
     path('add-lecturer/', views.add_lecturer, name='add_lecturer'),
+    path('edit-lecturer/<int:lecturer_id>', views.edit_lecturer, name='edit_lecturer'),
 
     # Add Lecturer to Course
     path('add-lecturer-to-course/<int:course_id>', views.add_lecturer_to_course, name='add_lecturer_to_course'),
@@ -38,4 +40,9 @@ urlpatterns = [
     path('add-exam', views.add_exam, name='add_exam'),
     path('add-exam-single', views.add_exam_single, name='add_exam_single'),
     path('delete-exam/<int:exam_id>', views.delete_exam, name='delete_exam'),
+    path('confirm-delete-exam/<int:exam_id>', views.confirm_delete_exam, name='confirm_delete_exam'),
+
+
+    # Profile
+    path('edit-profile/', views.edit_profile, name='edit_profile'),
 ]
