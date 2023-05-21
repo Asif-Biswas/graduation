@@ -46,8 +46,12 @@
                         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                             <a class="dropdown-item" href="#">Edit Profile</a>
                             <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="#">Log Out</a>
+                            <a class="dropdown-item" href="{% url 'logout' %}">Log Out</a>
                         </div>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-sm btn-secondary px-4 text-white" href="{% url 'login' %}">Log In</a>
                     </li>
                     {% endif %}
                 </ul>

@@ -11,6 +11,7 @@ urlpatterns = [
     path('', landing, name='landing'),
     path('landing/', landing, name='landing'),
     path('login/', login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
     path('calendar/', views.calendar, name='calendar'),
     path('add-event/', add_event, name='add_event'),
     path('update-event/', update_event, name='update_event'),
@@ -35,4 +36,6 @@ urlpatterns = [
 
     # Exam
     path('add-exam', views.add_exam, name='add_exam'),
+    path('add-exam-single', views.add_exam_single, name='add_exam_single'),
+    path('delete-exam/<int:exam_id>', views.delete_exam, name='delete_exam'),
 ]
