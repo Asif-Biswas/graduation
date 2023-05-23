@@ -17,6 +17,7 @@
         <table class="table table-bordered mt-4">
             <thead>
                 <tr>
+                    <th>Department</th>
                     <th>Course Code</th>
                     <th>Course Title</th>
                     <th>Credit Hours</th>
@@ -24,6 +25,8 @@
                     <th>Course Level</th>
                     <th>Lab Lecturer</th>
                     <th>Past Lecturers</th>
+                    <th>Building</th>
+                    <th>Section</th>
                     {% if user.is_superuser %}
                         <th>Actions</th>
                     {% endif %}
@@ -32,6 +35,7 @@
             <tbody>
                 {% for course in courses %}
                 <tr>
+                    <td>{{ course.course_department.department_name }}</td>
                     <td>{{ course.course_code }}</td>
                     <td>{{ course.course_name }}</td>
                     <td>{{ course.credit_hours }}</td>
@@ -45,6 +49,8 @@
                             None
                         {% endfor %}
                     </td>
+                    <td>{{ course.course_building }}</td>
+                    <td>{{ course.course_section }}</td>
                     {% if user.is_superuser %}
                         <td>
                             {% comment %} go to admin panel {% endcomment %}
@@ -76,6 +82,15 @@
                 </button>
                 </div>
                 <div class="modal-body">
+                    <div class="form-group">
+                        <label for="department">Department *</label>
+                        <select required name="course_department" class="form-control" id="department">
+                            <option value="">Choose Department</option>
+                            {% for department in departments %}
+                                <option value="{{ department.id }}">{{ department.department_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                     <div class="form-group">
                         <label for="code">Course Code *</label>
                         <input required name="course_code" type="text" class="form-control" id="code" placeholder="Enter Course Code">
@@ -118,6 +133,19 @@
                                 <option value="{{ lecturer.id }}">{{ lecturer.lecturer_name }}</option>
                             {% endfor %}
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="building">Building</label>
+                        {% comment %} <input required name="course_building" type="text" class="form-control" id="building" placeholder="Enter Building Name"> {% endcomment %}
+                        <select required name="course_building" class="form-control" id="building">
+                            <option value="">Choose Building</option>
+                            <option value="A">A (Girls)</option>
+                            <option value="B">B (Boys)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="section">Section</label>
+                        <input name="course_section" type="text" class="form-control" id="section" placeholder="Enter Section">
                     </div>
                 </div>
                 <div class="modal-footer">

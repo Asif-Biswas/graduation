@@ -20,6 +20,9 @@
                         <tr>
                             <th scope="col">Lecturer ID</th>
                             <th scope="col">Lecturer Name</th>
+                            <th scope="col">User</th>
+                            <th scope="col">Department</th>
+                            <th scope="col">Lecturer Gender</th>
                             <th scope="col">Past Courses Taught</th>
                             {% comment %} <th scope="col">Rating</th> {% endcomment %}
                             {% if user.is_superuser %}
@@ -32,6 +35,15 @@
                             <tr>
                                 <td>{{ lecturer.id }}</td>
                                 <td>{{ lecturer.lecturer_name }}</td>
+                                <td>{{ lecturer.lecturer_user.username }}</td>
+                                <td>{{ lecturer.lecturer_department.department_name }}</td>
+                                <td>
+                                    {% if lecturer.lecturer_gender == 'M' %}
+                                    Male
+                                    {% else %}
+                                    Female
+                                    {% endif %}
+                                </td>
                                 <td>
                                     {% for course in lecturer.lecturer_past_courses.all %}
                                         {{ course.course_name }}{% if not forloop.last %}, {% endif %}
@@ -72,6 +84,24 @@
                 </button>
                 </div>
                 <div class="modal-body">
+                    <div class="form-group">
+                        <label for="department">Department</label>
+                        <select required name="lecturer_department" class="form-control">
+                            <option value="">Choose</option>
+                            {% for department in departments %}
+                                <option value="{{ department.id }}">{{ department.department_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="user">User</label>
+                        <select required name="lecturer_user" class="form-control">
+                            <option value="">Choose</option>
+                            {% for user in users %}
+                                <option value="{{ user.id }}">{{ user.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                     <div class="form-group">
                         <label for="name">Name</label>
                         <input required name="lecturer_name" type="text" class="form-control" id="name" placeholder="Enter Lecturer Name">

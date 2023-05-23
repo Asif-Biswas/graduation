@@ -11,6 +11,16 @@
             {% csrf_token %}
             <div class="modal-body">
                 <div class="form-group">
+                    <label for="department">Department *</label>
+                    <select required name="course_department" class="form-control" id="department">
+                        <option value="">Choose Department</option>
+                        {% for department in departments %}
+                            <option value="{{ department.id }}" {% if course.course_department == department %} selected {% endif %}
+                            >{{ department.department_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
                     <label for="code">Course Code *</label>
                     <input required name="course_code" type="text" class="form-control" id="code" placeholder="Enter Course Code" value="{{ course.course_code }}">
                 </div>
@@ -55,6 +65,18 @@
                             >{{ lecturer.lecturer_name }}</option>
                         {% endfor %}
                     </select>
+                </div>
+                <div class="form-group">
+                    <label for="building">Building</label>
+                    <select required name="course_building" class="form-control" id="building">
+                        <option value="">Choose Building</option>
+                        <option value="A" {% if course.course_building == 'A' %} selected {% endif %}>A (Girls)</option>
+                        <option value="B" {% if course.course_building == 'B' %} selected {% endif %}>B (Boys)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="section">Section</label>
+                    <input name="course_section" type="text" class="form-control" id="section" placeholder="Enter Section" value="{{ course.course_section }}">
                 </div>
             </div>
             <div class="modal-footer">
