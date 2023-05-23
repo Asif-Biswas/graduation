@@ -224,7 +224,7 @@ def exam_dates(request):
     exam_dates_json = []
     for exam_date in exam_dates:
         exam_dates_json.append({
-            'title': exam_date.course.course_name,
+            'title': exam_date.exam_type + ' \n' + exam_date.course.course_name,
             'start': exam_date.exam_date.strftime('%Y-%m-%d') + 'T' + exam_date.start_time.strftime('%H:%M:%S'),
             'url': '/confirm-delete-exam/' + str(exam_date.id)
         })
@@ -344,6 +344,124 @@ def add_exam_single(request):
 
 
 @login_required(login_url='login')
+def add_quiz_exam(request):
+    if request.method == 'POST':
+        course = request.POST.get('course')
+        start_date = request.POST.get('start_date')
+        start_time = request.POST.get('start_time')
+
+        course = Course.objects.get(id=course)
+        exam_schedule = ExamSchedule.objects.create(
+            course=course,
+            exam_date=start_date,
+            start_time=start_time,
+            exam_type='Quiz'
+        )
+        exam_schedule.save()
+        return redirect('exam_dates')
+
+
+@login_required(login_url='login')
+def add_midterm_exam(request):
+    if request.method == 'POST':
+        courses = request.POST.getlist('courses')
+        start_date = request.POST.get('start_date')
+        end_date = request.POST.get('end_date')
+        start_time = request.POST.get('start_time')
+        end_time = request.POST.get('end_time')
+
+        courses = Course.objects.filter(id__in=courses)
+        exam_dates = []
+        exam_hours = []
+        # add the days to exam_dates list between start_date and end_date
+        start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
+        end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
+        delta = end_date - start_date
+        for i in range(delta.days + 1):
+            # check if the day is a weekend (friday or saturday)
+            if (start_date + datetime.timedelta(days=i)).weekday() not in [4, 5]:
+                exam_dates.append(start_date + datetime.timedelta(days=i))
+
+        # add the hours to exam_hours list between start_time and end_time
+        start_time = datetime.datetime.strptime(start_time, '%H:%M')
+        end_time = datetime.datetime.strptime(end_time, '%H:%M')
+        delta = end_time - start_time
+        for i in range(delta.seconds // 3600 + 1):
+            exam_hours.append(start_time + datetime.timedelta(hours=i))
+
+        courses_len = len(courses)
+        exam_dates_len = len(exam_dates)
+
+        exams_gradually = exam_dates_len / courses_len
+        
+        # Assign exams to courses
+        first_exam_date_and_time = exam_dates[0].strftime('%Y-%m-%d') + 'T' + exam_hours[0].strftime('%H:%M:%S')
+        exam_assigned_at_with_time = [first_exam_date_and_time]
+
+        exam_assigned_at = [exam_dates[0]]
+        add_index = 1 if exams_gradually < 1 else int(exams_gradually)
+        add_index_fraction = exams_gradually - add_index
+        add_index_fraction_backup = add_index_fraction
+        fraction_added = False
+
+        for course in courses[1:]:
+            # calculate the next add_index
+            add_index_fraction = add_index_fraction + add_index_fraction_backup
+            if not fraction_added:
+                if add_index_fraction >= 1:
+                    add_index = add_index + 1
+                    add_index_fraction = add_index_fraction - 1
+                    fraction_added = True
+            else:
+                add_index -= 1
+                fraction_added = False
+
+
+            # check if course is last course in the list
+            if course == courses[courses_len - 1]:
+                last_index = exam_dates_len - 1
+                next_exam_date = exam_dates[last_index]
+                exam_assigned_at.append(next_exam_date)
+            else:
+                last_exam_date = exam_assigned_at[-1]
+                last_exam_date_index = exam_dates.index(last_exam_date)
+                next_exam_date_index = last_exam_date_index + add_index if last_exam_date_index + add_index < exam_dates_len else 0
+                next_exam_date = exam_dates[next_exam_date_index]
+                exam_assigned_at.append(next_exam_date)
+
+            next_exam_time = exam_hours[0]
+            next_exam_date_and_time = next_exam_date.strftime('%Y-%m-%d') + 'T' + next_exam_time.strftime('%H:%M:%S')
+            
+            while next_exam_date_and_time in exam_assigned_at_with_time:
+                # add 4 hours to next_exam_date_and_time
+                next_exam_time = next_exam_time + datetime.timedelta(hours=4)
+                next_exam_date_and_time = next_exam_date.strftime('%Y-%m-%d') + 'T' + next_exam_time.strftime('%H:%M:%S')
+            exam_assigned_at_with_time.append(next_exam_date_and_time)
+
+            # Assign exams to courses
+
+        #print(exam_assigned_at)
+        print(exam_assigned_at_with_time)
+
+        # Assign exams to courses
+        for date_time in exam_assigned_at_with_time:
+            course = courses[exam_assigned_at_with_time.index(date_time)]
+            exam_schedule = ExamSchedule.objects.create(
+                course=course,
+                exam_date=date_time.split('T')[0],
+                start_time=date_time.split('T')[1],
+                exam_type='Midterm'
+            )
+            exam_schedule.save()
+            
+            
+        return redirect('exam_dates')
+
+
+
+
+
+@login_required(login_url='login')
 def delete_exam(request, exam_id):
     exam_schedule = ExamSchedule.objects.get(id=exam_id)
     exam_schedule.delete()
@@ -353,6 +471,10 @@ def delete_exam(request, exam_id):
 @login_required(login_url='login')
 def confirm_delete_exam(request, exam_id):
     exam = ExamSchedule.objects.get(id=exam_id)
+    user = request.user
+    if exam.exam_type == 'Final' and request.user.groups.filter(name='Coordinators').exists():
+        messages.error(request, 'You can not change this exam date.')
+        return redirect('exam_dates')
     courses = Course.objects.all()
     return render(request, 'confirm_delete_exam.html', {'exam_id': exam_id, 'exam': exam, 'courses': courses})
 

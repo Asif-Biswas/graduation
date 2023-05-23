@@ -100,6 +100,7 @@ class ExamSchedule(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     exam_date = models.DateField()
     start_time = models.TimeField()
+    exam_type = models.CharField(max_length=20, default='Final')
 
     class Meta:
         unique_together = ('course', 'exam_date', 'start_time')

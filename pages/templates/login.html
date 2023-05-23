@@ -7,10 +7,13 @@
 
 {% block content %}
     <div class="login-container">
-        <img class="login-logo" src="{% static 'images/imamulogo.png' %}" alt="University Logo">
+        
 
-        <div class="login-form">
-            <h4>University Administration Sign In</h4>
+        <div class="login-form p-5">
+            <div class="d-flex justify-content-center">
+                <img class="login-logo" style="text-align: center;" src="{% static 'images/imamulogo.png' %}" alt="University Logo">
+            </div>
+            <h4>Sign In</h4>
 
             {% if error_message %}
                 <div class="alert alert-danger" role="alert">

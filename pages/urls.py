@@ -43,6 +43,8 @@ urlpatterns = [
     path('delete-exam/<int:exam_id>', views.delete_exam, name='delete_exam'),
     path('confirm-delete-exam/<int:exam_id>', views.confirm_delete_exam, name='confirm_delete_exam'),
     path('edit-exam/<int:exam_id>', views.edit_exam, name='edit_exam'),
+    path('add-quiz-exam', views.add_quiz_exam, name="add_quiz_exam"),
+    path('add-midterm-exam', views.add_midterm_exam, name="add_midterm_exam"),
 
 
     # Profile
