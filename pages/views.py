@@ -141,10 +141,8 @@ def lecturers(request):
 def add_lecturer(request):
     if request.method == 'POST':
         lecturer_user = request.POST.get('lecturer_user')
-        try:
-            usertest = User.objects.get(id=lecturer_user)
-        except User.DoesNotExist:
-            messages.error(request, 'User does not exist')
+        if Lecturer.objects.filter(lecturer_user=lecturer_user).exists():
+            messages.error(request, 'Lecturer with this username already exist')
             return redirect('lecturers')
         lecturer_department = request.POST.get('lecturer_department')
         lecturer_name = request.POST.get('lecturer_name')
