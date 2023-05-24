@@ -13,6 +13,9 @@
                 <form class="search-container mt-4 d-flex align-items-center" action="{% url 'search_lecturer' %}" method="GET">
                     <input name="q" type="text" class="form-control w-100" placeholder="Search for Lecturer (Enter Name)" value="{{ request.GET.q }}">
                     <button type="submit" class="btn btn-secondary mx-2">Search</button>
+                    {% if request.GET.q %}
+                    <a href="{% url 'lecturers' %}" class="btn btn-danger">Clear</a>
+                    {% endif %}
                     {% comment %} if admin user {% endcomment %}
                     {% if user.is_superuser %}
                     <button type="button" class="btn btn-primary my-4" data-toggle="modal" data-target="#exampleModalCenter" style="width: 150px">Add Lecturer</button>
@@ -91,7 +94,7 @@
                 </button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group">
+                    {% comment %} <div class="form-group">
                         <label for="user">User</label>
                         <select required name="lecturer_user" class="form-control">
                             <option value="">Choose</option>
@@ -99,7 +102,7 @@
                                 <option value="{{ user.id }}">{{ user.username }}</option>
                             {% endfor %}
                         </select>
-                    </div>
+                    </div> {% endcomment %}
                     <div class="form-group">
                         <label for="name">Name</label>
                         <input required name="lecturer_name" type="text" class="form-control" id="name" placeholder="Enter Lecturer Name">

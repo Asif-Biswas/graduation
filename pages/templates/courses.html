@@ -7,8 +7,11 @@
     <div class="container">
         <h1 class="text-center mt-4">Courses</h1>
         <form class="search-container mt-4 d-flex" action="{% url 'search_course' %}" method="GET">
-            <input name="q" type="text" class="form-control w-100" placeholder="Search for courses (Enter Course Code or Course Name)">
+            <input name="q" type="text" class="form-control w-100" placeholder="Search for courses (Enter Course Code or Course Name)" value="{{ request.GET.q }}">
             <button type="submit" class="btn btn-secondary ml-2">Search</button>
+            {% if request.GET.q %}
+                <a href="{% url 'courses' %}" class="btn btn-secondary ml-2">Clear</a>
+            {% endif %}
             {% comment %} if admin user {% endcomment %}
             {% if user.is_superuser %}
                 <button type="button" class="btn btn-primary ml-2" data-toggle="modal" data-target="#exampleModalCenter" style="width: 150px">Add Course</button>
@@ -20,7 +23,7 @@
                     <tr>
                         <th>Department</th>
                         <th>Course Code</th>
-                        <th>Course Title</th>
+                        <th>Course Name</th>
                         <th>Credit Hours</th>
                         <th>Lecturer</th>
                         <th>Course Level</th>
@@ -147,10 +150,10 @@
                             <option value="B">B (Boys)</option>
                         </select>
                     </div>
-                    <div class="form-group">
+                    {% comment %} <div class="form-group">
                         <label for="section">Section</label>
                         <input name="course_section" type="text" class="form-control" id="section" placeholder="Enter Section">
-                    </div>
+                    </div> {% endcomment %}
                 </div>
                 <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>

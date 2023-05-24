@@ -13,6 +13,8 @@ import math
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
+from django.core.mail import send_mail
+from django.conf import settings
 
 
         
@@ -71,7 +73,7 @@ def add_course(request):
         course_lab_lecturer = request.POST.get('course_lab_lecturer')
         course_past_lecturers = request.POST.getlist('course_past_lecturers')
         course_building = request.POST.get('course_building')
-        course_section = request.POST.get('course_section')
+        #course_section = request.POST.get('course_section')
         course = Course.objects.create(
             course_department=Department.objects.get(id=int(course_department)) if course_department else None,
             course_code=course_code, 
@@ -81,7 +83,7 @@ def add_course(request):
             course_level=course_level, 
             course_lab_lecturer=Lecturer.objects.get(id=int(course_lab_lecturer)) if course_lab_lecturer else None,
             course_building=course_building,
-            course_section=course_section
+            #course_section=course_section
         )
         for lecturer_id in course_past_lecturers:
             course.course_past_lecturers.add(Lecturer.objects.get(id=int(lecturer_id)))
@@ -156,10 +158,10 @@ def lecturers(request):
 @login_required(login_url='login')
 def add_lecturer(request):
     if request.method == 'POST':
-        lecturer_user = request.POST.get('lecturer_user')
-        if Lecturer.objects.filter(lecturer_user=lecturer_user).exists():
-            messages.error(request, 'Lecturer with this username already exist')
-            return redirect('lecturers')
+        #lecturer_user = request.POST.get('lecturer_user')
+        # if Lecturer.objects.filter(lecturer_user=lecturer_user).exists():
+        #     messages.error(request, 'Lecturer with this username already exist')
+        #     return redirect('lecturers')
         lecturer_department = request.POST.get('lecturer_department')
         lecturer_name = request.POST.get('lecturer_name')
         lecturer_email = request.POST.get('lecturer_email')
@@ -168,7 +170,7 @@ def add_lecturer(request):
         #lecturer_type = request.POST.get('lecturer_type')
         lecturer_past_courses = request.POST.getlist('lecturer_past_courses')
         lecturer = Lecturer.objects.create(
-            lecturer_user=User.objects.get(id=int(lecturer_user)) if lecturer_user else None,
+            #lecturer_user=User.objects.get(id=int(lecturer_user)) if lecturer_user else None,
             lecturer_department=Department.objects.get(id=int(lecturer_department)) if lecturer_department else None,
             lecturer_name=lecturer_name,
             lecturer_email=lecturer_email,
@@ -243,18 +245,54 @@ def add_lecturer_to_course(request, course_id):
     if request.method == 'POST':
         lecturer_id = request.POST.get('lecturer')
         lecturer_type = request.POST.get('lecturer_type')
-        print(lecturer_id, lecturer_type)
+        section = request.POST.get('section')
+        time = request.POST.get('time')
         course = Course.objects.get(id=course_id)
         lecturer = Lecturer.objects.get(id=lecturer_id)
+        # if lecturers all courses has this time, then return error
+        if lecturer.lecturer_past_courses.filter(course_time=time).exists():
+            messages.error(request, 'This lecturer has a course at this time')
+            return redirect('esnad')
+        course.course_section = section
+        course.course_time = time
         if lecturer_type == 'L':
             course.course_lab_lecturer = lecturer
             course.course_lecturer = None
+            course_type = 'Laboratory'
         else:
             course.course_lecturer = lecturer
             course.course_lab_lecturer = None
+            course_type = 'Theory'
         course.course_past_lecturers.add(lecturer)
         course.save()
         lecturer.lecturer_past_courses.add(course)
+
+        past_lec = Lecturer.objects.filter(lecturer_past_courses__in=[course]).exclude(id=lecturer.id).distinct()
+        teachers = []
+        for lec in past_lec:
+            teachers.append(f'{lec.lecturer_name} (email: {lec.lecturer_email}, phone: {lec.lecturer_number}), ')
+
+        if len(teachers) == 0:
+            teachers.append('No teachers')
+
+        subject = 'You have been aseigned a course'
+        body = f'Hello {lecturer.lecturer_name},\n\nYou have been aseigned the course {course.course_name} for this semester.\n\n \
+        Course: {course.course_name}\n \
+        Course Code: {course.course_code}\n \
+        Course type: {course_type}\n \
+        Section: {section}\n \
+        Time: {time}\n \
+        Teachers: {f" ".join(teachers)}\n \
+        '
+        send_mail(
+            subject, 
+            body, 
+            settings.EMAIL_HOST_USER,
+            [lecturer.lecturer_email],
+            fail_silently=False
+        )
+
+
         return redirect('esnad')
 
 
@@ -358,12 +396,15 @@ def add_exam(request):
         # Assign exams to courses
         for date_time in exam_assigned_at_with_time:
             course = courses[exam_assigned_at_with_time.index(date_time)]
-            exam_schedule = ExamSchedule.objects.create(
-                course=course,
-                exam_date=date_time.split('T')[0],
-                start_time=date_time.split('T')[1],
-            )
-            exam_schedule.save()
+            if not ExamSchedule.objects.filter(course=course, exam_type='Final').exists():
+                exam_schedule = ExamSchedule.objects.create(
+                    course=course,
+                    exam_date=date_time.split('T')[0],
+                    start_time=date_time.split('T')[1],
+                )
+                exam_schedule.save()
+            else:
+                messages.error(request, 'Exam already exists for ' + course.course_name + ' course')
             
             
         return redirect('exam_dates')
@@ -377,12 +418,15 @@ def add_exam_single(request):
         start_time = request.POST.get('start_time')
 
         course = Course.objects.get(id=course)
-        exam_schedule = ExamSchedule.objects.create(
-            course=course,
-            exam_date=start_date,
-            start_time=start_time,
-        )
-        exam_schedule.save()
+        if not ExamSchedule.objects.filter(course=course, exam_type='Final').exists():
+            exam_schedule = ExamSchedule.objects.create(
+                course=course,
+                exam_date=start_date,
+                start_time=start_time,
+            )
+            exam_schedule.save()
+        else:
+            messages.error(request, 'Exam already exists for ' + course.course_name + ' course')
         return redirect('exam_dates')
 
 
@@ -394,6 +438,9 @@ def add_quiz_exam(request):
         start_time = request.POST.get('start_time')
 
         course = Course.objects.get(id=course)
+        if ExamSchedule.objects.filter(course=course, exam_type='Quiz').exists():
+            messages.error(request, 'Quiz exam already exists for ' + course.course_name + ' course')
+            return redirect('exam_dates')
         exam_schedule = ExamSchedule.objects.create(
             course=course,
             exam_date=start_date,
@@ -489,13 +536,16 @@ def add_midterm_exam(request):
         # Assign exams to courses
         for date_time in exam_assigned_at_with_time:
             course = courses[exam_assigned_at_with_time.index(date_time)]
-            exam_schedule = ExamSchedule.objects.create(
-                course=course,
-                exam_date=date_time.split('T')[0],
-                start_time=date_time.split('T')[1],
-                exam_type='Midterm'
-            )
-            exam_schedule.save()
+            if not ExamSchedule.objects.filter(course=course, exam_type='Midterm').exists():
+                exam_schedule = ExamSchedule.objects.create(
+                    course=course,
+                    exam_date=date_time.split('T')[0],
+                    start_time=date_time.split('T')[1],
+                    exam_type='Midterm'
+                )
+                exam_schedule.save()
+            else:
+                messages.error(request, 'You can not add midterm exams. There are midterm exams already added.')
             
             
         return redirect('exam_dates')
@@ -618,3 +668,19 @@ def esnad(request):
     lecturers = Lecturer.objects.all()
     courses = Course.objects.all()
     return render(request, 'esnad.html', {'lecturers': lecturers, 'courses': courses})
+
+
+@login_required(login_url='login')
+def contact_us(request):
+    return render(request, 'contact_us.html')
+
+
+@login_required(login_url='login')
+def terms_of_use(request):
+    return render(request, 'terms_of_use.html')
+
+
+@login_required(login_url='login')
+def privacy_policy(request):
+    return render(request, 'privacy_policy.html')
+

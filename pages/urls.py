@@ -51,4 +51,7 @@ urlpatterns = [
 
     # Profile
     path('edit-profile/', views.edit_profile, name='edit_profile'),
+    path('contact-us/', views.contact_us, name='contact_us'),
+    path('terms-of-use/', views.terms_of_use, name='terms_of_use'),
+    path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
 ]
