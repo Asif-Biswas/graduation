@@ -6,66 +6,70 @@
     </head>
     <div class="container">
         <h1 class="text-center mt-4">Courses</h1>
-        <div class="search-container mt-4 d-flex">
-            <input type="text" class="form-control w-100" placeholder="Search for courses">
-            <button class="btn btn-secondary ml-2">Search</button>
+        <form class="search-container mt-4 d-flex" action="{% url 'search_course' %}" method="GET">
+            <input name="q" type="text" class="form-control w-100" placeholder="Search for courses (Enter Course Code or Course Name)">
+            <button type="submit" class="btn btn-secondary ml-2">Search</button>
             {% comment %} if admin user {% endcomment %}
             {% if user.is_superuser %}
-                <button class="btn btn-primary ml-2" data-toggle="modal" data-target="#exampleModalCenter" style="width: 150px">Add Course</button>
+                <button type="button" class="btn btn-primary ml-2" data-toggle="modal" data-target="#exampleModalCenter" style="width: 150px">Add Course</button>
             {% endif %}
-        </div>
-        <table class="table table-bordered mt-4">
-            <thead>
-                <tr>
-                    <th>Department</th>
-                    <th>Course Code</th>
-                    <th>Course Title</th>
-                    <th>Credit Hours</th>
-                    <th>Lecturer</th>
-                    <th>Course Level</th>
-                    <th>Lab Lecturer</th>
-                    <th>Past Lecturers</th>
-                    <th>Building</th>
-                    <th>Section</th>
-                    {% if user.is_superuser %}
-                        <th>Actions</th>
-                    {% endif %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for course in courses %}
-                <tr>
-                    <td>{{ course.course_department.department_name }}</td>
-                    <td>{{ course.course_code }}</td>
-                    <td>{{ course.course_name }}</td>
-                    <td>{{ course.credit_hours }}</td>
-                    <td>{{ course.course_lecturer.lecturer_name }}</td>
-                    <td>{{ course.course_level }}</td>
-                    <td>{{ course.course_lab_lecturer.lecturer_name }}</td>
-                    <td>
-                        {% for lecturer in course.course_past_lecturers.all %}
-                            {{ lecturer.lecturer_name }}{% if not forloop.last %}, {% endif %}
-                        {% empty %}
-                            None
-                        {% endfor %}
-                    </td>
-                    <td>{{ course.course_building }}</td>
-                    <td>{{ course.course_section }}</td>
-                    {% if user.is_superuser %}
+        </form>
+        {% if courses %}
+            <table class="table table-bordered mt-4">
+                <thead>
+                    <tr>
+                        <th>Department</th>
+                        <th>Course Code</th>
+                        <th>Course Title</th>
+                        <th>Credit Hours</th>
+                        <th>Lecturer</th>
+                        <th>Course Level</th>
+                        <th>Lab Lecturer</th>
+                        <th>Past Lecturers</th>
+                        <th>Building</th>
+                        <th>Section</th>
+                        {% if user.is_superuser %}
+                            <th>Actions</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for course in courses %}
+                    <tr>
+                        <td>{{ course.course_department.department_name }}</td>
+                        <td>{{ course.course_code }}</td>
+                        <td>{{ course.course_name }}</td>
+                        <td>{{ course.credit_hours }}</td>
+                        <td>{{ course.course_lecturer.lecturer_name }}</td>
+                        <td>{{ course.course_level }}</td>
+                        <td>{{ course.course_lab_lecturer.lecturer_name }}</td>
                         <td>
-                            {% comment %} go to admin panel {% endcomment %}
-                            <a href="{% url 'edit_course' course.id %}" class="btn btn-sm btn-primary">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <a href="/admin/pages/course/{{ course.id }}/delete/" class="btn btn-sm btn-danger">
-                                <i class="fas fa-trash"></i>
-                            </a>
+                            {% for lecturer in course.course_past_lecturers.all %}
+                                {{ lecturer.lecturer_name }}{% if not forloop.last %}, {% endif %}
+                            {% empty %}
+                                None
+                            {% endfor %}
                         </td>
-                    {% endif %}
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                        <td>{{ course.course_building }}</td>
+                        <td>{{ course.course_section }}</td>
+                        {% if user.is_superuser %}
+                            <td class="d-flex">
+                                {% comment %} go to admin panel {% endcomment %}
+                                <a href="{% url 'edit_course' course.id %}" class="btn btn-sm btn-primary mr-1">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="/admin/pages/course/{{ course.id }}/delete/" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="text-center mt-4">No courses found.</p>
+        {% endif %}
     </div>
 
 
@@ -101,7 +105,7 @@
                     </div>
                     <div class="form-group">
                         <label for="credit">Credit Hours</label>
-                        <input name="credit_hours" type="number" class="form-control" id="credit" placeholder="Enter Credit Hours">
+                        <input name="credit_hours" type="number" class="form-control" id="credit" placeholder="Enter Credit Hours" min="1" max="5">
                     </div>
                     <div class="form-group">
                         <label for="lecturer">Lecturer</label>

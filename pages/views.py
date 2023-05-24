@@ -12,6 +12,7 @@ import datetime
 import math
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.db.models import Q
 
 
         
@@ -37,7 +38,8 @@ def logout_view(request):
 @login_required(login_url='login')
 def landing(request):
     if request.user.is_superuser:
-        return render(request, 'landing.html', {'user': request.user})
+        events = Event.objects.all()
+        return render(request, 'landing.html', {'user': request.user, 'events': events})
     
     return redirect('lecturer_view')
 
@@ -121,14 +123,33 @@ def edit_course(request, course_id):
     return render(request, 'edit_course.html', {'course': course, 'lecturers': lecturers, 'departments': departments})
 
 
+@login_required(login_url='login')
+def search_course(request):
+    q = request.GET.get('q')
+    # filter by course name or course codeorder by alphabetical order
+    courses = Course.objects.filter(Q(course_name__icontains=q) | Q(course_code__icontains=q)).order_by('course_name')
+    lecturers = Lecturer.objects.all()
+    departments = Department.objects.all()
+    return render(request, 'courses.html', {'courses': courses, 'lecturers': lecturers, 'departments': departments})
+    
+
+
+
 ########## LECTURERS ##########
 @login_required(login_url='login')
 def lecturers(request):
     lecturers = Lecturer.objects.all()
     courses = Course.objects.all()
     departments = Department.objects.all()
-    # users whose are in lecturers group
-    users = User.objects.filter(groups__name='Lecturers')
+    
+    lecturers = Lecturer.objects.all()
+    lecturer_users = []
+    for lecturer in lecturers:
+        lecturer_users.append(lecturer.lecturer_user)
+    # username not in
+    users = User.objects.filter(~Q(username__in=lecturer_users))
+    # exclude the superuser
+    users = users.exclude(is_superuser=True)
     return render(request, 'lecturers.html', {'lecturers': lecturers, 'courses': courses, 'departments': departments, 'users': users})
 
 
@@ -144,7 +165,7 @@ def add_lecturer(request):
         lecturer_email = request.POST.get('lecturer_email')
         lecturer_phone = request.POST.get('lecturer_phone')
         lecturer_gender = request.POST.get('lecturer_gender')
-        lecturer_type = request.POST.get('lecturer_type')
+        #lecturer_type = request.POST.get('lecturer_type')
         lecturer_past_courses = request.POST.getlist('lecturer_past_courses')
         lecturer = Lecturer.objects.create(
             lecturer_user=User.objects.get(id=int(lecturer_user)) if lecturer_user else None,
@@ -153,7 +174,7 @@ def add_lecturer(request):
             lecturer_email=lecturer_email,
             lecturer_number=lecturer_phone,
             lecturer_gender=lecturer_gender,
-            lecturer_type=lecturer_type,
+            #lecturer_type=lecturer_type,
         )
         lecturer.save()
         for course_id in lecturer_past_courses:
@@ -171,18 +192,18 @@ def edit_lecturer(request, lecturer_id):
         lecturer_email = request.POST.get('lecturer_email')
         lecturer_phone = request.POST.get('lecturer_phone')
         lecturer_gender = request.POST.get('lecturer_gender')
-        lecturer_type = request.POST.get('lecturer_type')
+        #lecturer_type = request.POST.get('lecturer_type')
         lecturer_past_courses = request.POST.getlist('lecturer_past_courses')
-        lecturer.lecturer_user = User.objects.get(id=int(lecturer_user)) if lecturer_user else None
+        #lecturer.lecturer_user = User.objects.get(id=int(lecturer_user)) if lecturer_user else None
         lecturer.lecturer_department = Department.objects.get(id=int(lecturer_department)) if lecturer_department else None
         lecturer.lecturer_name = lecturer_name
         lecturer.lecturer_email = lecturer_email
         lecturer.lecturer_number = lecturer_phone
         lecturer.lecturer_gender = lecturer_gender
-        lecturer.lecturer_type = lecturer_type
+        #lecturer.lecturer_type = lecturer_type
         lecturer.save()
         lecturer.lecturer_past_courses.clear()
-        print(lecturer_past_courses)
+        
         for course_id in lecturer_past_courses:
             lecturer.lecturer_past_courses.add(Course.objects.get(id=int(course_id)))
         return redirect('lecturers')
@@ -196,12 +217,24 @@ def edit_lecturer(request, lecturer_id):
 def lecturer_view(request):
     try:
         lecturer = Lecturer.objects.get(lecturer_user=request.user)
-        courses = Course.objects.filter(course_lecturer=lecturer)
+        # filter by course lecturer or course lab lecturer
+        courses = Course.objects.filter(Q(course_lecturer=lecturer) | Q(course_lab_lecturer=lecturer)).order_by('course_name')
         similar_lecturers = Lecturer.objects.filter(lecturer_past_courses__in=courses).exclude(id=lecturer.id).distinct()
         return render(request, 'lecturer_view.html', {'lecturer': lecturer, 'courses': courses, 'similar_lecturers': similar_lecturers})
     except:
         return render(request, 'not_a_lecturer.html')
 
+
+@login_required(login_url='login')
+def search_lecturer(request):
+    q = request.GET.get('q')
+    # filter by lecturer name or lecturer email or lecturer number
+    lecturers = Lecturer.objects.filter(lecturer_name__icontains=q).order_by('lecturer_name')
+    courses = Course.objects.all()
+    departments = Department.objects.all()
+    # users whose are in lecturers group
+    users = User.objects.filter(groups__name='Lecturers')
+    return render(request, 'lecturers.html', {'lecturers': lecturers, 'courses': courses, 'departments': departments, 'users': users})
 
 
 ########## Add Lexturer to Course ##########
@@ -209,9 +242,17 @@ def lecturer_view(request):
 def add_lecturer_to_course(request, course_id):
     if request.method == 'POST':
         lecturer_id = request.POST.get('lecturer')
+        lecturer_type = request.POST.get('lecturer_type')
+        print(lecturer_id, lecturer_type)
         course = Course.objects.get(id=course_id)
         lecturer = Lecturer.objects.get(id=lecturer_id)
-        course.course_lecturer = lecturer
+        if lecturer_type == 'L':
+            course.course_lab_lecturer = lecturer
+            course.course_lecturer = None
+        else:
+            course.course_lecturer = lecturer
+            course.course_lab_lecturer = None
+        course.course_past_lecturers.add(lecturer)
         course.save()
         lecturer.lecturer_past_courses.add(course)
         return redirect('esnad')

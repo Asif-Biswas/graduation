@@ -9,63 +9,70 @@
     <div class="container">
         <div class="row">
             <div class="col-md-12">
-                <div class="d-flex justify-content-between">
-                    <h2 class="my-4">Lecturers</h2>
+                <h1 class="text-center mt-4">Lecturers</h1>
+                <form class="search-container mt-4 d-flex align-items-center" action="{% url 'search_lecturer' %}" method="GET">
+                    <input name="q" type="text" class="form-control w-100" placeholder="Search for Lecturer (Enter Name)" value="{{ request.GET.q }}">
+                    <button type="submit" class="btn btn-secondary mx-2">Search</button>
+                    {% comment %} if admin user {% endcomment %}
                     {% if user.is_superuser %}
-                    <button class="btn btn-primary my-4" data-toggle="modal" data-target="#exampleModalCenter" style="width: 150px">Add Lecturer</button>
+                    <button type="button" class="btn btn-primary my-4" data-toggle="modal" data-target="#exampleModalCenter" style="width: 150px">Add Lecturer</button>
                     {% endif %}
-                </div>
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th scope="col">Lecturer ID</th>
-                            <th scope="col">Lecturer Name</th>
-                            <th scope="col">User</th>
-                            <th scope="col">Department</th>
-                            <th scope="col">Lecturer Gender</th>
-                            <th scope="col">Past Courses Taught</th>
-                            {% comment %} <th scope="col">Rating</th> {% endcomment %}
-                            {% if user.is_superuser %}
-                            <th scope="col">Actions</th>
-                            {% endif %}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for lecturer in lecturers %}
+                </form>
+                {% if lecturers %}
+                    <table class="table table-bordered">
+                        <thead>
                             <tr>
-                                <td>{{ lecturer.id }}</td>
-                                <td>{{ lecturer.lecturer_name }}</td>
-                                <td>{{ lecturer.lecturer_user.username }}</td>
-                                <td>{{ lecturer.lecturer_department.department_name }}</td>
-                                <td>
-                                    {% if lecturer.lecturer_gender == 'M' %}
-                                    Male
-                                    {% else %}
-                                    Female
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% for course in lecturer.lecturer_past_courses.all %}
-                                        {{ course.course_name }}{% if not forloop.last %}, {% endif %}
-                                    {% empty %}
-                                        No past courses taught.
-                                    {% endfor %}
-                                </td>
-                                {% comment %} <td>{{ lecturer.lecturer_rating }}</td> {% endcomment %}
+                                <th scope="col">Lecturer ID</th>
+                                <th scope="col">Lecturer Name</th>
+                                <th scope="col">User</th>
+                                <th scope="col">Department</th>
+                                <th scope="col">Lecturer Gender</th>
+                                <th scope="col">Past Courses Taught</th>
+                                {% comment %} <th scope="col">Rating</th> {% endcomment %}
                                 {% if user.is_superuser %}
-                                <td>
-                                    <a href="{% url 'edit_lecturer' lecturer.id %}" class="btn btn-sm btn-primary">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <a href="/admin/pages/lecturer/{{ lecturer.id }}/delete/" class="btn btn-sm btn-danger">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
-                                </td>
+                                <th scope="col">Actions</th>
                                 {% endif %}
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {% for lecturer in lecturers %}
+                                <tr>
+                                    <td>{{ lecturer.id }}</td>
+                                    <td>{{ lecturer.lecturer_name }}</td>
+                                    <td>{{ lecturer.lecturer_user.username }}</td>
+                                    <td>{{ lecturer.lecturer_department.department_name }}</td>
+                                    <td>
+                                        {% if lecturer.lecturer_gender == 'M' %}
+                                        Male
+                                        {% else %}
+                                        Female
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% for course in lecturer.lecturer_past_courses.all %}
+                                            {{ course.course_name }}{% if not forloop.last %}, {% endif %}
+                                        {% empty %}
+                                            No past courses taught.
+                                        {% endfor %}
+                                    </td>
+                                    {% comment %} <td>{{ lecturer.lecturer_rating }}</td> {% endcomment %}
+                                    {% if user.is_superuser %}
+                                    <td class="d-flex">
+                                        <a href="{% url 'edit_lecturer' lecturer.id %}" class="btn btn-sm btn-primary mr-1">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="/admin/pages/lecturer/{{ lecturer.id }}/delete/" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="text-center">No lecturers found.</p>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -78,21 +85,12 @@
             <form method="POST" action="{% url 'add_lecturer' %}">
                 {% csrf_token %}
                 <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLongTitle">Add Lecturer</h5>
+                <h5 class="modal-title" id="exampleModalLongTitle">Add Instructor</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group">
-                        <label for="department">Department</label>
-                        <select required name="lecturer_department" class="form-control">
-                            <option value="">Choose</option>
-                            {% for department in departments %}
-                                <option value="{{ department.id }}">{{ department.department_name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
                     <div class="form-group">
                         <label for="user">User</label>
                         <select required name="lecturer_user" class="form-control">
@@ -105,6 +103,15 @@
                     <div class="form-group">
                         <label for="name">Name</label>
                         <input required name="lecturer_name" type="text" class="form-control" id="name" placeholder="Enter Lecturer Name">
+                    </div>
+                    <div class="form-group">
+                        <label for="department">Department</label>
+                        <select required name="lecturer_department" class="form-control">
+                            <option value="">Choose</option>
+                            {% for department in departments %}
+                                <option value="{{ department.id }}">{{ department.department_name }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="email">Email</label>
@@ -122,14 +129,14 @@
                             <option value="F">Female</option>
                         </select>
                     </div>
-                    <div class="form-group">
+                    {% comment %} <div class="form-group">
                         <label for="lecturer_type">Lecturer Type</label>
                         <select required name="lecturer_type" class="form-control">
                             <option value="">Choose</option>
                             <option value="L">Laboratory</option>
                             <option value="T">Theory</option>
                         </select>
-                    </div>
+                    </div> {% endcomment %}
                     <div class="form-group">
                         <label for="past_courses">Past Courses Taught</label>
                         <!-- multiselect -->

@@ -41,14 +41,14 @@
                         >Female</option>
                     </select>
                 </div>
-                <div class="form-group">
+                {% comment %} <div class="form-group">
                     <label for="lecturer_type">Lecturer Type</label>
                     <select required name="lecturer_type" class="form-control" value="{{lecturer.lecturer_type}}">
                         <option value="">Choose</option>
                         <option value="L" {% if lecturer.lecturer_type == 'L' %} selected {% endif %}>Lecturer</option>
                         <option value="T" {% if lecturer.lecturer_type == 'T' %} selected {% endif %}>Theory</option>
                     </select>
-                </div>
+                </div> {% endcomment %}
                 <div class="form-group">
                     <label for="past_courses">Past Courses Taught</label>
                     <!-- multiselect -->

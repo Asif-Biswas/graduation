@@ -13,21 +13,23 @@
                 <th scope="col">Courses</th>
                 <th scope="col">Section</th>
                 <th scope="col">Lecturers</th>
+                <th scope="col">Lecturer Type</th>
+                <th scope="col">Action</th>
               </tr>
             </thead>
             <tbody>
               {% for course in courses %}
                 <tr>
+                    <form action="{% url 'add_lecturer_to_course' course.id %}" method="POST">
                     <td>{{ course.course_name }}</td>
                     <td>{{ course.course_section }}</td>
                     <td>
-                    <form action="{% url 'add_lecturer_to_course' course.id %}" method="POST">
                         {% csrf_token %}
                         {% comment %} onchange submit this form {% endcomment %}
-                        <select name="lecturer" name="lecturer" class="form-control bg-white border-0" onchange="this.form.submit()" {% if not user.is_superuser %} disabled {% endif %}>
-                            <option value="" selected disabled hidden>Choose here</option>
+                        <select required name="lecturer" name="lecturer" class="form-control bg-white border-0" {% if not user.is_superuser %} disabled {% endif %}>
+                            <option value="" disabled hidden>Choose here</option>
                         {% for lecturer in lecturers %}
-                            {% if lecturer == course.course_lecturer %}
+                            {% if lecturer == course.course_lecturer or lecturer == course.course_lab_lecturer %}
                                 <option value="{{ lecturer.id }}" selected>
                                     {{ lecturer.lecturer_name }}
                                     {% if user.is_superuser and lecturer in course.course_past_lecturers.all %}
@@ -48,8 +50,20 @@
                             {% endif %}
                         {% endfor %}
                         </select>
-                    </form>
                     </td>
+                    <td>
+                        <select required name="lecturer_type" class="form-control bg-white border-0">
+                            <option value="">Choose Type</option>
+                            <option value="L" {% if course.course_lab_lecturer %} selected {% endif %}
+                            >Laboratory</option>
+                            <option value="T" {% if course.course_lecturer %} selected {% endif %}
+                            >Theory</option>
+                        </select>
+                    </td>
+                    <td>
+                        <button type="submit" class="btn btn-primary" {% if not user.is_superuser %} disabled {% endif %}>Assign</button>
+                    </td>
+                </form>
                 </tr>
                 {% endfor %}
             </tbody>

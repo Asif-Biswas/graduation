@@ -12,6 +12,7 @@
                   <tr>
                     <th scope="col">Courses Code</th>
                     <th scope="col">Courses Name</th>
+                    <th scope="col">Courses Type</th>
                     <th scope="col">Building</th>
                     <th scope="col">Section</th>
                     <th scope="col">Past Lecturers</th>
@@ -22,6 +23,13 @@
                     <tr>
                         <td>{{course.course_code}}</td>
                         <td>{{course.course_name}}</td>
+                        <td>
+                            {% if course.course_lab_lecturer %}
+                                Laboratory
+                            {% else %}
+                                Theory
+                            {% endif %}
+                        </td>
                         <td>{{course.course_building}}</td>
                         <td>{{course.course_section}}</td>
                         <td>

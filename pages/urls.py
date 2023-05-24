@@ -25,6 +25,7 @@ urlpatterns = [
     path('courses/', views.courses, name='courses'),
     path('add-course/', views.add_course, name='add_course'),
     path('edit-course/<int:course_id>', views.edit_course, name='edit_course'),
+    path('search-course/', views.search_course, name='search_course'),
 
 
     # Lecturer URLs
@@ -32,6 +33,7 @@ urlpatterns = [
     path('add-lecturer/', views.add_lecturer, name='add_lecturer'),
     path('edit-lecturer/<int:lecturer_id>', views.edit_lecturer, name='edit_lecturer'),
     path('lecturer-view', views.lecturer_view, name='lecturer_view'),
+    path('search-lecturer/', views.search_lecturer, name='search_lecturer'),
 
     # Add Lecturer to Course
     path('add-lecturer-to-course/<int:course_id>', views.add_lecturer_to_course, name='add_lecturer_to_course'),
