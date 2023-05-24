@@ -136,6 +136,9 @@ def lecturers(request):
 def add_lecturer(request):
     if request.method == 'POST':
         lecturer_user = request.POST.get('lecturer_user')
+        if Lecturer.objects.filter(lecturer_user=lecturer_user).exists():
+            messages.error(request, 'Lecturer with this username already exist')
+            return redirect('lecturers')
         lecturer_department = request.POST.get('lecturer_department')
         lecturer_name = request.POST.get('lecturer_name')
         lecturer_email = request.POST.get('lecturer_email')
@@ -162,7 +165,7 @@ def add_lecturer(request):
 def edit_lecturer(request, lecturer_id):
     lecturer = Lecturer.objects.get(id=lecturer_id)
     if request.method == 'POST':
-        lecturer_user = request.POST.get('lecturer_user')
+        #lecturer_user = request.POST.get('lecturer_user')
         lecturer_department = request.POST.get('lecturer_department')
         lecturer_name = request.POST.get('lecturer_name')
         lecturer_email = request.POST.get('lecturer_email')
