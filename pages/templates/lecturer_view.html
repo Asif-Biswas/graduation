@@ -34,8 +34,41 @@
                     </tr>
                     {% endfor %}
                 </tbody>
-              </table>
+            </table>
+
+            {% if similar_lecturers %}
+            <h6 class="mt-4">Here are the lecturers with the courses you teach:</h6>
+            <table class="table table-hover table-bordered">
+                <thead>
+                  <tr>
+                    <th scope="col">Lecturer Name</th>
+                    <th scope="col">Lecturer Email</th>
+                    <th scope="col">Lecturer Phone</th>
+                    <th scope="col">Past Courses</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lecturer in similar_lecturers %}
+                    <tr>
+                        <td>{{lecturer.lecturer_name}}</td>
+                        <td>{{lecturer.lecturer_email}}</td>
+                        <td>{{lecturer.lecturer_phone}}</td>
+                        <td>
+                            {% for course in lecturer.lecturer_past_courses.all %}
+                                {{ course.course_name }}{% if not forloop.last %}, {% endif %}
+                            {% empty %}
+                                None
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <h6 class="mt-4 text-secondary">There are no lecturers with the courses you teach.</h6>
+            {% endif %}
         </div>
+        
     </div>
 </div>
     

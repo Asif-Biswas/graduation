@@ -36,15 +36,10 @@ def logout_view(request):
 
 @login_required(login_url='login')
 def landing(request):
-    # check if user in Lecturers group
-    if request.user.groups.filter(name='Lecturers').exists():
-        print('Lecturer')
-        return redirect('lecturer_view')
-    # check if user in Coordinators group
-    elif request.user.groups.filter(name='Coordinators').exists():
-        return redirect('exam_dates')
+    if request.user.is_superuser:
+        return render(request, 'landing.html', {'user': request.user})
     
-    return render(request, 'landing.html', {'user': request.user})
+    return redirect('lecturer_view')
 
 def calendar(request):
     return render(request, 'calendar.html')
@@ -196,9 +191,13 @@ def edit_lecturer(request, lecturer_id):
 
 @login_required(login_url='login')
 def lecturer_view(request):
-    lecturer = Lecturer.objects.get(lecturer_user=request.user)
-    courses = Course.objects.filter(course_lecturer=lecturer)
-    return render(request, 'lecturer_view.html', {'lecturer': lecturer, 'courses': courses})
+    try:
+        lecturer = Lecturer.objects.get(lecturer_user=request.user)
+        courses = Course.objects.filter(course_lecturer=lecturer)
+        similar_lecturers = Lecturer.objects.filter(lecturer_past_courses__in=courses).exclude(id=lecturer.id).distinct()
+        return render(request, 'lecturer_view.html', {'lecturer': lecturer, 'courses': courses, 'similar_lecturers': similar_lecturers})
+    except:
+        return render(request, 'not_a_lecturer.html')
 
 
 

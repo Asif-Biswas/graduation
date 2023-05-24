@@ -89,13 +89,12 @@ class Lecturer(models.Model):
 
 class Event(models.Model):
     event_name = models.CharField(max_length=100)
-    event_start = models.DateTimeField()
-    event_end = models.DateTimeField()
     event_description = models.TextField()
-    event_color = models.CharField(max_length=7)
-    exam_date = models.DateTimeField(null=True)
-    related_course = models.ForeignKey('Course', on_delete=models.CASCADE, null=True, related_name='course_events')
 
+    def __str__(self):
+        return self.event_name
+    
+    
 class ExamSchedule(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     exam_date = models.DateField()

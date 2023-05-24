@@ -20,16 +20,6 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="user">User</label>
-                    <select required name="lecturer_user" class="form-control">
-                        <option value="">Choose</option>
-                        {% for user in users %}
-                            <option value="{{ user.id }}" {% if user.id == lecturer.lecturer_user.id %} selected {% endif %}
-                            >{{ user.username }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="form-group">
                     <label for="name">Name</label>
                     <input required name="lecturer_name" type="text" class="form-control" id="name" placeholder="Enter Lecturer Name" value="{{ lecturer.lecturer_name }}">
                 </div>

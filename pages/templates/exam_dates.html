@@ -17,17 +17,23 @@
 
 <div class="container mb-5">
     <h1 class="my-4 text-center">Exam Dates</h1>
-    <div id="calendar"></div>
+    <div class="d-flex justify-content-center">
+        <div id="calendar" style="max-width: 800px;"></div>
+    </div>
     {% if user.is_superuser %}
-        <div class="d-flex justify-content-end">
+    <div class="d-flex justify-content-center">
+        <div class="d-flex justify-content-end" style="max-width: 800px;">
             <button class="btn btn-primary mt-3 mr-2" data-toggle="modal" data-target="#addExamModalSingle">Add Exam (Single)</button>
             <button class="btn btn-primary mt-3" data-toggle="modal" data-target="#addExamModal">Add Exam (Automate)</button>
         </div>
+    </div>
     {% else %}
-        <div class="d-flex justify-content-end">
+    <div class="d-flex justify-content-center">
+        <div class="d-flex justify-content-end" style="max-width: 800px;">
             <button class="btn btn-primary mt-3 mr-2" data-toggle="modal" data-target="#addExamModalSingleC">Add Quiz Exam</button>
             <button class="btn btn-primary mt-3" data-toggle="modal" data-target="#addExamModalC">Add Midterm Exam</button>
         </div>
+    </div>
     {% endif %}
 </div>
 
