@@ -70,18 +70,6 @@
                     <td>
                         <select required name="section" class="form-control bg-white border-0">
                             <option value="">Choose Section</option>
-                            {% if course.course_building == 'A' %}
-                                <option {% if course.course_section == '271' %} selected {% endif %} value="271">271</option>
-                                <option {% if course.course_section == '272' %} selected {% endif %} value="272">272</option>
-                                <option {% if course.course_section == '273' %} selected {% endif %} value="273">273</option>
-                                <option {% if course.course_section == '274' %} selected {% endif %} value="274">274</option>
-                                <option {% if course.course_section == '275' %} selected {% endif %} value="275">275</option>
-                                <option {% if course.course_section == '276' %} selected {% endif %} value="276">276</option>
-                                <option {% if course.course_section == '277' %} selected {% endif %} value="277">277</option>
-                                <option {% if course.course_section == '278' %} selected {% endif %} value="278">278</option>
-                                <option {% if course.course_section == '279' %} selected {% endif %} value="279">279</option>
-                                <option {% if course.course_section == '280' %} selected {% endif %} value="280">280</option>
-                            {% else %}
                                 <option {% if course.course_section == '171' %} selected {% endif %} value="171">171</option>
                                 <option {% if course.course_section == '172' %} selected {% endif %} value="172">172</option>
                                 <option {% if course.course_section == '173' %} selected {% endif %} value="173">173</option>
@@ -92,7 +80,19 @@
                                 <option {% if course.course_section == '178' %} selected {% endif %} value="178">178</option>
                                 <option {% if course.course_section == '179' %} selected {% endif %} value="179">179</option>
                                 <option {% if course.course_section == '180' %} selected {% endif %} value="180">180</option>
-                            {% endif %}
+
+                                <option {% if course.course_section == '271' %} selected {% endif %} value="271">271</option>
+                                <option {% if course.course_section == '272' %} selected {% endif %} value="272">272</option>
+                                <option {% if course.course_section == '273' %} selected {% endif %} value="273">273</option>
+                                <option {% if course.course_section == '274' %} selected {% endif %} value="274">274</option>
+                                <option {% if course.course_section == '275' %} selected {% endif %} value="275">275</option>
+                                <option {% if course.course_section == '276' %} selected {% endif %} value="276">276</option>
+                                <option {% if course.course_section == '277' %} selected {% endif %} value="277">277</option>
+                                <option {% if course.course_section == '278' %} selected {% endif %} value="278">278</option>
+                                <option {% if course.course_section == '279' %} selected {% endif %} value="279">279</option>
+                                <option {% if course.course_section == '280' %} selected {% endif %} value="280">280</option>
+                            
+                            
                         </select>
                     </td>
                     <td>

@@ -57,16 +57,15 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="past">Past Lecturers</label>
+                    <label for="past">Prerequisites</label>
                     <!-- multiselect -->
-                    <select name="course_past_lecturers" multiple class="form-control" id="past">
-                        {% for lecturer in lecturers %}
-                            <option value="{{ lecturer.id }}" {% if lecturer in course.course_past_lecturers.all %} selected {% endif %}
-                            >{{ lecturer.lecturer_name }}</option>
+                    <select required name="course_past_lecturers" multiple class="form-control" id="past">
+                        {% for course in courses %}
+                            <option value="{{ course.id }}">{{ course.course_name }}</option>
                         {% endfor %}
                     </select>
                 </div>
-                <div class="form-group">
+                {% comment %} <div class="form-group">
                     <label for="building">Building</label>
                     <select required name="course_building" class="form-control" id="building">
                         <option value="">Choose Building</option>
@@ -77,7 +76,7 @@
                 <div class="form-group">
                     <label for="section">Section</label>
                     <input name="course_section" type="text" class="form-control" id="section" placeholder="Enter Section" value="{{ course.course_section }}">
-                </div>
+                </div> {% endcomment %}
             </div>
             <div class="modal-footer">
             <a href="{% url 'courses' %}" class="btn btn-secondary">Cancel</a>

@@ -58,6 +58,7 @@ class Course(models.Model):
     course_department = models.ForeignKey('Department', on_delete=models.SET_NULL, null=True, blank=True)
     course_building = models.CharField(max_length=100, blank=True)
     course_section = models.CharField(max_length=100, blank=True)
+    course_prerequisites = models.ManyToManyField('Course', related_name='prerequisites', blank=True)
 
     def __str__(self):
         return self.course_name

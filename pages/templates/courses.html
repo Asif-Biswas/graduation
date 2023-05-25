@@ -107,49 +107,48 @@
                         <input required name="course_name" type="text" class="form-control" id="name" placeholder="Enter Course Name">
                     </div>
                     <div class="form-group">
-                        <label for="credit">Credit Hours</label>
-                        <input name="credit_hours" type="number" class="form-control" id="credit" placeholder="Enter Credit Hours" min="1" max="5">
+                        <label for="credit">Credit Hours *</label>
+                        <input required name="credit_hours" type="number" class="form-control" id="credit" placeholder="Enter Credit Hours" min="1" max="5">
                     </div>
                     <div class="form-group">
-                        <label for="lecturer">Lecturer</label>
-                        <select name="course_lecturer" class="form-control" id="lecturer">
-                            <option value="">Choose Lecturer</option>
+                        <label for="lecturer">Instructor *</label>
+                        <select required name="course_lecturer" class="form-control" id="lecturer">
+                            <option value="">Choose Instructor</option>
                             {% for lecturer in lecturers %}
                                 <option value="{{ lecturer.id }}">{{ lecturer.lecturer_name }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="level">Course Level</label>
-                        <input name="course_level" type="number" class="form-control" id="level" placeholder="Enter Course Level">
+                        <label for="level">Course Level *</label>
+                        <input required name="course_level" type="number" class="form-control" id="level" placeholder="Enter Course Level" min="1" max="13">
                     </div>
                     <div class="form-group">
-                        <label for="lab">Lab Lecturer</label>
-                        <select name="course_lab_lecturer" class="form-control" id="lab">
-                            <option value="">Choose Lab Lecturer</option>
+                        <label for="lab">Co-instructor *</label>
+                        <select required name="course_lab_lecturer" class="form-control" id="lab">
+                            <option value="">Choose Co-instructor</option>
                             {% for lecturer in lecturers %}
                                 <option value="{{ lecturer.id }}">{{ lecturer.lecturer_name }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="past">Past Lecturers</label>
+                        <label for="past">Prerequisites *</label>
                         <!-- multiselect -->
-                        <select name="course_past_lecturers" multiple class="form-control" id="past">
-                            {% for lecturer in lecturers %}
-                                <option value="{{ lecturer.id }}">{{ lecturer.lecturer_name }}</option>
+                        <select required name="course_past_lecturers" multiple class="form-control" id="past">
+                            {% for course in courses %}
+                                <option value="{{ course.id }}">{{ course.course_name }}</option>
                             {% endfor %}
                         </select>
                     </div>
-                    <div class="form-group">
+                    {% comment %} <div class="form-group">
                         <label for="building">Building</label>
-                        {% comment %} <input required name="course_building" type="text" class="form-control" id="building" placeholder="Enter Building Name"> {% endcomment %}
                         <select required name="course_building" class="form-control" id="building">
                             <option value="">Choose Building</option>
                             <option value="A">A (Girls)</option>
                             <option value="B">B (Boys)</option>
                         </select>
-                    </div>
+                    </div> {% endcomment %}
                     {% comment %} <div class="form-group">
                         <label for="section">Section</label>
                         <input name="course_section" type="text" class="form-control" id="section" placeholder="Enter Section">

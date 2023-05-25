@@ -104,10 +104,6 @@
                         </select>
                     </div> {% endcomment %}
                     <div class="form-group">
-                        <label for="name">Name</label>
-                        <input required name="lecturer_name" type="text" class="form-control" id="name" placeholder="Enter Lecturer Name">
-                    </div>
-                    <div class="form-group">
                         <label for="department">Department</label>
                         <select required name="lecturer_department" class="form-control">
                             <option value="">Choose</option>
@@ -117,12 +113,16 @@
                         </select>
                     </div>
                     <div class="form-group">
+                        <label for="name">Instructor Name</label>
+                        <input required name="lecturer_name" type="text" class="form-control" id="name" placeholder="Enter Lecturer Name">
+                    </div>
+                    <div class="form-group">
                         <label for="email">Email</label>
                         <input required name="lecturer_email" type="email" class="form-control" id="email" placeholder="Enter Lecturer Email">
                     </div>
                     <div class="form-group">
                         <label for="phone">Phone</label>
-                        <input required name="lecturer_phone" type="tel" class="form-control" id="phone" placeholder="Enter Lecturer Phone">
+                        <input required name="lecturer_phone" type="tel" class="form-control" id="phone" placeholder="Enter Lecturer Phone (ex. 05)">
                     </div>
                     <div class="form-group">
                         <label for="gender">Gender</label>
@@ -143,7 +143,7 @@
                     <div class="form-group">
                         <label for="past_courses">Past Courses Taught</label>
                         <!-- multiselect -->
-                        <select name="lecturer_past_courses" multiple class="form-control" id="past">
+                        <select required name="lecturer_past_courses" multiple class="form-control" id="past">
                             {% for course in courses %}
                                 <option value="{{ course.id }}">{{ course.course_name }}</option>
                             {% endfor %}
@@ -158,5 +158,13 @@
           </div>
         </div>
       </div>
+
+      <script>
+        // check if the modal id closed
+        $('#exampleModalCenter').on('hidden.bs.modal', function () {
+            // reset the form
+            $(this).find('form').trigger('reset');
+        })
+      </script>
     {% endif %}
 {% endblock %}

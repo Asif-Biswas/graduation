@@ -54,7 +54,7 @@ def calendar(request):
 @login_required(login_url='login')
 def courses(request):
     # Fetch all courses from the database
-    courses = Course.objects.all()
+    courses = Course.objects.all().order_by('course_name')
     lecturers = Lecturer.objects.all()
     departments = Department.objects.all()
     # Pass the courses to the template
@@ -63,34 +63,36 @@ def courses(request):
 
 @login_required(login_url='login')
 def add_course(request):
-    if request.method == 'POST':
-        course_department = request.POST.get('course_department')
-        course_code = request.POST.get('course_code')
-        course_name = request.POST.get('course_name')
-        credit_hours = request.POST.get('credit_hours')
-        course_lecturer = request.POST.get('course_lecturer')
-        course_level = request.POST.get('course_level')
-        course_lab_lecturer = request.POST.get('course_lab_lecturer')
-        course_past_lecturers = request.POST.getlist('course_past_lecturers')
-        course_building = request.POST.get('course_building')
-        #course_section = request.POST.get('course_section')
-        course = Course.objects.create(
-            course_department=Department.objects.get(id=int(course_department)) if course_department else None,
-            course_code=course_code, 
-            course_name=course_name, 
-            credit_hours=credit_hours, 
-            course_lecturer=Lecturer.objects.get(id=int(course_lecturer)) if course_lecturer else None,
-            course_level=course_level, 
-            course_lab_lecturer=Lecturer.objects.get(id=int(course_lab_lecturer)) if course_lab_lecturer else None,
-            course_building=course_building,
-            #course_section=course_section
-        )
-        for lecturer_id in course_past_lecturers:
-            course.course_past_lecturers.add(Lecturer.objects.get(id=int(lecturer_id)))
-        
-        course.save()
-        return redirect('courses')
-
+    try:
+        if request.method == 'POST':
+            course_department = request.POST.get('course_department')
+            course_code = request.POST.get('course_code')
+            course_name = request.POST.get('course_name')
+            credit_hours = request.POST.get('credit_hours')
+            course_lecturer = request.POST.get('course_lecturer')
+            course_level = request.POST.get('course_level')
+            course_lab_lecturer = request.POST.get('course_lab_lecturer')
+            course_past_lecturers = request.POST.getlist('course_past_lecturers')
+            course_building = request.POST.get('course_building')
+            #course_section = request.POST.get('course_section')
+            course = Course.objects.create(
+                course_department=Department.objects.get(id=int(course_department)) if course_department else None,
+                course_code=course_code, 
+                course_name=course_name, 
+                credit_hours=credit_hours, 
+                course_lecturer=Lecturer.objects.get(id=int(course_lecturer)) if course_lecturer else None,
+                course_level=course_level, 
+                course_lab_lecturer=Lecturer.objects.get(id=int(course_lab_lecturer)) if course_lab_lecturer else None,
+                course_building=course_building,
+                #course_section=course_section
+            )
+            for lecturer_id in course_past_lecturers:
+                course.course_prerequisites.add(Course.objects.get(id=int(lecturer_id)))
+            
+            course.save()
+            return redirect('courses')
+    except:
+        return HttpResponse('Error adding course')
 
 @login_required(login_url='login')
 def edit_course(request, course_id):
@@ -118,7 +120,7 @@ def edit_course(request, course_id):
         course.save()
         course.course_past_lecturers.clear()
         for lecturer_id in course_past_lecturers:
-            course.course_past_lecturers.add(Lecturer.objects.get(id=int(lecturer_id)))
+            course.course_prerequisites.add(Course.objects.get(id=int(lecturer_id)))
         return redirect('courses')
     lecturers = Lecturer.objects.all()
     departments = Department.objects.all()
@@ -140,11 +142,10 @@ def search_course(request):
 ########## LECTURERS ##########
 @login_required(login_url='login')
 def lecturers(request):
-    lecturers = Lecturer.objects.all()
+    lecturers = Lecturer.objects.all().order_by('lecturer_name')
     courses = Course.objects.all()
     departments = Department.objects.all()
     
-    lecturers = Lecturer.objects.all()
     lecturer_users = []
     for lecturer in lecturers:
         lecturer_users.append(lecturer.lecturer_user)
