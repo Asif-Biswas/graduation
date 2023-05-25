@@ -99,16 +99,20 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="code">Course Code *</label>
-                        <input required name="course_code" type="text" class="form-control" id="code" placeholder="Enter Course Code">
-                    </div>
-                    <div class="form-group">
                         <label for="name">Course Name *</label>
                         <input required name="course_name" type="text" class="form-control" id="name" placeholder="Enter Course Name">
                     </div>
                     <div class="form-group">
+                        <label for="code">Course Code *</label>
+                        <input required name="course_code" type="text" class="form-control" id="code" placeholder="Enter Course Code">
+                    </div>
+                    <div class="form-group">
                         <label for="credit">Credit Hours *</label>
                         <input required name="credit_hours" type="number" class="form-control" id="credit" placeholder="Enter Credit Hours" min="1" max="5">
+                    </div>
+                    <div class="form-group">
+                        <label for="level">Course Level *</label>
+                        <input required name="course_level" type="number" class="form-control" id="level" placeholder="Enter Course Level" min="1" max="13">
                     </div>
                     <div class="form-group">
                         <label for="lecturer">Instructor *</label>
@@ -120,10 +124,6 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="level">Course Level *</label>
-                        <input required name="course_level" type="number" class="form-control" id="level" placeholder="Enter Course Level" min="1" max="13">
-                    </div>
-                    <div class="form-group">
                         <label for="lab">Co-instructor *</label>
                         <select required name="course_lab_lecturer" class="form-control" id="lab">
                             <option value="">Choose Co-instructor</option>
@@ -133,7 +133,7 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="past">Prerequisites *</label>
+                        <label for="past">Prerequisites * (press ctrl+click will remove the selection)</label>
                         <!-- multiselect -->
                         <select required name="course_past_lecturers" multiple class="form-control" id="past">
                             {% for course in courses %}
