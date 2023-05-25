@@ -54,4 +54,6 @@ urlpatterns = [
     path('contact-us/', views.contact_us, name='contact_us'),
     path('terms-of-use/', views.terms_of_use, name='terms_of_use'),
     path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
+
+    path('assigned-courses/', views.assigned_courses, name='assigned_courses'),
 ]

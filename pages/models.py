@@ -3,6 +3,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.db.models import Q
+
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -85,6 +87,10 @@ class Lecturer(models.Model):
 
     def __str__(self):
         return self.lecturer_name
+    
+    def get_all_assigned_courses(self):
+        courses = Course.objects.filter(Q(course_lecturer=self) | Q(course_lab_lecturer=self))
+        return courses
 
 
 class Event(models.Model):

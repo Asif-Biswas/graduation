@@ -684,3 +684,18 @@ def terms_of_use(request):
 def privacy_policy(request):
     return render(request, 'privacy_policy.html')
 
+
+@login_required(login_url='login')
+def assigned_courses(request):
+    # get the courses that course_lecturer or course_lab_lecturer not null
+    courses = Course.objects.filter(Q(course_lecturer__isnull=False) | Q(course_lab_lecturer__isnull=False))
+    all_lecturers = []
+    for course in courses:
+        if course.course_lecturer:
+            if course.course_lecturer not in all_lecturers:
+                all_lecturers.append(course.course_lecturer)
+        if course.course_lab_lecturer:
+            if course.course_lab_lecturer not in all_lecturers:
+                all_lecturers.append(course.course_lab_lecturer)
+
+    return render(request, 'assigned_courses.html', {'courses': courses, 'lecturers': all_lecturers})
