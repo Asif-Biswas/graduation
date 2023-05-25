@@ -27,7 +27,7 @@
                             <tr>
                                 <th scope="col">Lecturer ID</th>
                                 <th scope="col">Lecturer Name</th>
-                                <th scope="col">User</th>
+                                <th scope="col">Email</th>
                                 <th scope="col">Department</th>
                                 <th scope="col">Lecturer Gender</th>
                                 <th scope="col">Past Courses Taught</th>
@@ -42,7 +42,7 @@
                                 <tr>
                                     <td>{{ lecturer.id }}</td>
                                     <td>{{ lecturer.lecturer_name }}</td>
-                                    <td>{{ lecturer.lecturer_user.username }}</td>
+                                    <td>{{ lecturer.lecturer_email }}</td>
                                     <td>{{ lecturer.lecturer_department.department_name }}</td>
                                     <td>
                                         {% if lecturer.lecturer_gender == 'M' %}
