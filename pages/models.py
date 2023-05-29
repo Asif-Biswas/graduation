@@ -36,13 +36,11 @@ class Department(models.Model):
 
 
 DAYS_OF_WEEK = (
-    ('0', 'Sunday'),
-    ('1', 'Monday'),
-    ('2', 'Tuesday'),
-    ('3', 'Wednesday'),
-    ('4', 'Thursday'),
-    ('5', 'Friday'),
-    ('6', 'Saturday'),
+    ('1', 'Sunday'),
+    ('2', 'Monday'),
+    ('3', 'Tuesday'),
+    ('4', 'Wednesday'),
+    ('5', 'Thursday'),
 )
 
 class Course(models.Model):
@@ -62,6 +60,9 @@ class Course(models.Model):
 
     def __str__(self):
         return self.course_name
+    
+    def day_name(self):
+        return DAYS_OF_WEEK[int(self.course_day)-1][1]
     
 class Lecturer(models.Model):
     lecturer_user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)

@@ -247,14 +247,16 @@ def add_lecturer_to_course(request, course_id):
         lecturer_id = request.POST.get('lecturer')
         lecturer_type = request.POST.get('lecturer_type')
         section = request.POST.get('section')
+        day = request.POST.get('day')
         time = request.POST.get('time')
         course = Course.objects.get(id=course_id)
         lecturer = Lecturer.objects.get(id=lecturer_id)
         # if lecturers all courses has this time, then return error
-        if lecturer.lecturer_past_courses.filter(course_time=time).exists():
+        if lecturer.lecturer_past_courses.filter(course_time=time).exists() and lecturer.lecturer_past_courses.filter(course_time=time).first() != course:
             messages.error(request, 'This lecturer has a course at this time')
             return redirect('esnad')
         course.course_section = section
+        course.course_day = day
         course.course_time = time
         if lecturer_type == 'L':
             course.course_lab_lecturer = lecturer
@@ -285,13 +287,14 @@ def add_lecturer_to_course(request, course_id):
         Time: {time}\n \
         Teachers: {f" ".join(teachers)}\n \
         '
-        send_mail(
-            subject, 
-            body, 
-            settings.EMAIL_HOST_USER,
-            [lecturer.lecturer_email],
-            fail_silently=False
-        )
+        # send_mail(
+        #     subject, 
+        #     body, 
+        #     settings.EMAIL_HOST_USER,
+        #     [lecturer.lecturer_email],
+        #     fail_silently=False
+        # )
+        messages.success(request, f'{lecturer.lecturer_name} has been added to {course.course_name}')
 
 
         return redirect('esnad')
@@ -700,3 +703,136 @@ def assigned_courses(request):
                 all_lecturers.append(course.course_lab_lecturer)
 
     return render(request, 'assigned_courses.html', {'courses': courses, 'lecturers': all_lecturers})
+
+
+
+def automate_esnad(request):
+    # remove all lecturers from course
+    courses = Course.objects.all()
+    if len(courses) > 45:
+        messages.error(request, 'There are more than 45 courses, please delete some courses')
+        return redirect('esnad')
+    for course in courses:
+        course.course_lecturer = None
+        course.course_lab_lecturer = None
+        course.course_section = ''
+        course.course_time = None
+        course.save()
+
+
+    b_sections = [271, 272, 273]
+    g_sections = [171, 172, 173]
+    teaching_hours = []
+    # teaching hours will be sunday to thursday from 8 to 3 except 12 to 1:30
+    # example item: {'day': 'Sunday', 'time': '8:00 - 10:00'}
+    for hour in range(8, 15, 2):
+        for day in range(1, 6):
+            if hour == 12:
+                continue
+            teaching_hours.append({'day': day, 'time': f'{hour}:00 - {hour+2}:00'})
+
+    #print(teaching_hours)
+    teaching_hours_with_b_sections = []
+    for section in b_sections:
+        for hour in teaching_hours:
+            teaching_hours_with_b_sections.append({'day': hour['day'], 'time': hour['time'], 'section': section})
+
+    teaching_hours_with_g_sections = []
+    for section in g_sections:
+        for hour in teaching_hours:
+            teaching_hours_with_g_sections.append({'day': hour['day'], 'time': hour['time'], 'section': section})
+
+    # print(teaching_hours_with_b_sections)
+    # print(teaching_hours_with_g_sections)
+
+
+    def get_available_lecturers(course, booked_lecturers):
+        #lecturer.lecturer_past_courses.all()
+        # get the lecturers that teach this course before
+        previous_lecturers = Lecturer.objects.filter(lecturer_past_courses__course_code=course.course_code)
+        for lecturer in previous_lecturers:
+            if lecturer not in booked_lecturers:
+                return lecturer
+            
+        lecturers = Lecturer.objects.all()
+        for lecturer in lecturers:
+            gender = lecturer.lecturer_gender
+            if gender == 'F' and course.course_building == 'B':
+                continue
+            if lecturer not in booked_lecturers:
+                return lecturer
+            
+        return None
+
+
+    booked_lecturers = []
+    for course in courses:
+        lecturer = get_available_lecturers(course, booked_lecturers)
+        while lecturer is None:
+            booked_lecturers = []
+            lecturer = get_available_lecturers(course, booked_lecturers)
+        booked_lecturers.append(lecturer)
+
+        course_building = course.course_building
+        if course_building == 'B':
+            section = teaching_hours_with_b_sections[0]
+            teaching_hours_with_b_sections.remove(section)
+            course.course_section = section['section']
+            start_time = section['time'].split(' - ')[0]
+            start_time = datetime.datetime.strptime(start_time, '%H:%M')
+            course.course_time = start_time
+            course.course_day = section['day']
+            course.course_lecturer = lecturer
+            course.save()
+        elif course_building == 'A':
+            section = teaching_hours_with_g_sections[0]
+            teaching_hours_with_g_sections.remove(section)
+            course.course_section = section['section']
+            start_time = section['time'].split(' - ')[0]
+            start_time = datetime.datetime.strptime(start_time, '%H:%M')
+            course.course_time = start_time
+            course.course_day = section['day']
+            course.course_lecturer = lecturer
+            course.save()
+            
+
+
+
+
+
+    return redirect('esnad')
+
+
+def duplicate_courses(request):
+    courses = Course.objects.all()
+    for course in courses:
+        building = course.course_building
+        if building == 'B':
+            if not Course.objects.filter(course_code=course.course_code, course_name=course.course_name, course_building='A').exists():
+                c = Course.objects.create(
+                    course_code=course.course_code, 
+                    course_name=course.course_name, 
+                    course_building='A',
+                    credit_hours=course.credit_hours,
+                    course_level=course.course_level,
+                    course_department=course.course_department,
+                )
+                course_prerequisites = course.course_prerequisites.all()
+                for prerequisite in course_prerequisites:
+                    c.course_prerequisites.add(prerequisite)
+                c.save()
+        elif building == 'A':
+            if not Course.objects.filter(course_code=course.course_code, course_name=course.course_name, course_building='B').exists():
+                c = Course.objects.create(
+                    course_code=course.course_code, 
+                    course_name=course.course_name, 
+                    course_building='B',
+                    credit_hours=course.credit_hours,
+                    course_level=course.course_level,
+                    course_department=course.course_department,
+                )
+                course_prerequisites = course.course_prerequisites.all()
+                for prerequisite in course_prerequisites:
+                    c.course_prerequisites.add(prerequisite)
+                c.save()
+    return redirect('courses')

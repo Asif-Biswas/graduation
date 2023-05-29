@@ -56,4 +56,6 @@ urlpatterns = [
     path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
 
     path('assigned-courses/', views.assigned_courses, name='assigned_courses'),
+    path('automate-esnad/', views.automate_esnad, name='automate_esnad'),
+    path('duplicate-courses/', views.duplicate_courses, name='duplicate_courses'),
 ]

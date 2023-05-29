@@ -21,6 +21,7 @@
                 <th scope="col">Lecturers</th>
                 <th scope="col">Lecturer Type</th>
                 <th scope="col">Section</th>
+                <th scope="col">Day</th>
                 <th scope="col">Time</th>
                 <th scope="col">Action</th>
               </tr>
@@ -29,7 +30,13 @@
               {% for course in courses %}
                 <tr>
                     <form action="{% url 'add_lecturer_to_course' course.id %}" method="POST">
-                    <td>{{ course.course_name }}</td>
+                    <td>{{ course.course_name }}
+                        {% if course.course_building == 'A' %}
+                            (Girls)
+                        {% else %}
+                            (Boys)
+                        {% endif %}
+                    </td>
                     <td>
                         {% csrf_token %}
                         {% comment %} onchange submit this form {% endcomment %}
@@ -96,6 +103,15 @@
                         </select>
                     </td>
                     <td>
+                        <select required name="day"  class="form-control bg-white border-0">
+                            <option value="">Choose Day</option>
+                            <option {% if course.course_day == '1' %} selected {% endif %} value="1">Sunday</option>
+                            <option {% if course.course_day == '2' %} selected {% endif %} value="2">Monday</option>
+                            <option {% if course.course_day == '3' %} selected {% endif %} value="3">Tuesday</option>
+                            <option {% if course.course_day == '4' %} selected {% endif %} value="4">Wednesday</option>
+                            <option {% if course.course_day == '5' %} selected {% endif %} value="5">Thursday</option>
+                        </select>
+                    <td>
                         <input required type="time" name="time" class="form-control bg-white border-0" value="{{ course.course_time|time:'H:i' }}">
                     </td>
                     <td>
@@ -106,6 +122,9 @@
                 {% endfor %}
             </tbody>
           </table>
+
+        <a href="{% url 'automate_esnad' %}" class="btn btn-primary" {% if not user.is_superuser %} disabled {% endif %}
+        >Automatically Assign</a>
     </div>
 
     {% comment %} <script src="{% static 'esnad.js' %}"></script> {% endcomment %}
